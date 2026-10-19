@@ -68,6 +68,7 @@ already adapted to this interface.
 ## Examples
 
 - [lcd1x_fine](../shaders/lcd1x_fine.wmshader): a fine, neutral LCD grid.
+- [lcd1x_fine_zfast](../shaders/lcd1x_fine_zfast.wmshader): the fine grid with adjustable zfast LCD gamma shaping.
 - [lcd1x_nds](../shaders/lcd1x_nds.wmshader): a native grid and NDS color correction.
 - [zfast_lcd](../shaders/zfast_lcd.wmshader): pixel borders and a gamma adjustment.
 - [LCD3x](../shaders/lcd3x.wmshader): Gigaherz's original RGB subpixel grid, adapted to native DS pixels.

@@ -7,7 +7,7 @@
 
 int main() {
     using namespace MelonDSAndroid;
-    for (const char* path : {"shaders/lcd1x_fine.wmshader", "shaders/lcd1x_nds.wmshader", "shaders/zfast_lcd.wmshader", "shaders/lcd3x.wmshader"}) {
+    for (const char* path : {"shaders/lcd1x_fine.wmshader", "shaders/lcd1x_fine_zfast.wmshader", "shaders/lcd1x_nds.wmshader", "shaders/zfast_lcd.wmshader", "shaders/lcd3x.wmshader"}) {
         std::ifstream input(path);
         assert(input.good());
         const std::string source((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());

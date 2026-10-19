@@ -250,6 +250,17 @@ namespace MelonDSAndroid
                 return true;
         }
 
+        // AAudio can report disconnection directly from requestStart after standby,
+        // before a data callback starts. In that case onErrorAfterClose never runs.
+        // Close on this worker, outside the state/operation locks, then use the
+        // generation-checked recovery path shared with asynchronous disconnections.
+        if (result == oboe::Result::ErrorDisconnected)
+        {
+            Log(Warn, "Audio output disconnected during pause/resume; reopening stream");
+            closeAudioOutputBundle(target);
+            resetAudioOutputStream(target->stream.get(), target->generation);
+        }
+
         return retryableTransition && result == oboe::Result::ErrorInvalidState;
     }
 

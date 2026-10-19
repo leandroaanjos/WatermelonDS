@@ -75,6 +75,7 @@
         <item>lcd</item>
         <item>scanlines</item>
         <item>retroarch</item>
+        <item>external</item>
     </string-array>
 
     <string-array name="video_vulkan_driver_mode_values">

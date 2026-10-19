@@ -315,6 +315,7 @@ private:
 
         VkRenderPass renderPass = VK_NULL_HANDLE;
         VkPipeline composedPipeline = VK_NULL_HANDLE;
+        u64 externalShaderGeneration = 0;
         VkCommandPool commandPool = VK_NULL_HANDLE;
         VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
         VkFence inFlightFence = VK_NULL_HANDLE;

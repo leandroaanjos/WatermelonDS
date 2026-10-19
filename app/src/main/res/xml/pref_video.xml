@@ -38,6 +38,32 @@
             android:defaultValue="none"/>
 
     <Preference
+            android:key="video_external_shader_source"
+            android:title="@string/external_shader_folder"
+            app:iconSpaceReserved="false"
+            android:persistent="false" />
+
+    <Preference
+            android:key="video_external_shader_preset"
+            android:title="@string/external_shader_selection"
+            app:iconSpaceReserved="false"
+            android:persistent="false" />
+
+    <Preference
+            android:key="video_external_shader_settings"
+            android:title="@string/external_shader_settings"
+            android:summary="@string/external_shader_management_summary"
+            app:iconSpaceReserved="false"
+            android:persistent="false" />
+
+    <Preference
+            android:key="video_external_shader_parameters"
+            android:title="@string/external_shader_parameters"
+            android:summary="@string/external_shader_parameters_summary"
+            app:iconSpaceReserved="false"
+            android:persistent="false" />
+
+    <Preference
             android:key="video_retroarch_shader_source"
             android:title="@string/video_retroarch_shader_source_title"
             app:iconSpaceReserved="false"

@@ -791,6 +791,7 @@
         <item>LCD</item>
         <item>扫描线</item>
         <item>RetroArch (.slangp)</item>
+        <item>@string/external_shader_filter</item>
     </string-array>
 
     <string name="video_retroarch_shader_root_title">RetroArch 着色器根目录</string>

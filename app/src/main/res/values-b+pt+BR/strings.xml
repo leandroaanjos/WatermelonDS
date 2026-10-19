@@ -342,6 +342,7 @@
         <item>LCD</item>
         <item>Scanlines</item>
         <item>RetroArch (.slangp)</item>
+        <item>@string/external_shader_filter</item>
     </string-array>
 
     <string-array name="audio_interpolation_options">

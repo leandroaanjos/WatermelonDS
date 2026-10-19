@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="external_shader_filter">External shader (Vulkan)</string>
+    <string name="external_shader_settings">External shader settings</string>
+    <string name="external_shader_folder">External shader source</string>
+    <string name="external_shader_selection">External shader</string>
+    <string name="external_shader_pick_folder">Select the folder containing your .wmshader files.</string>
+    <string name="external_shader_none_selected">None selected. Pick one from the external shader folder.</string>
+    <string name="external_shader_folder_empty">No .wmshader files or subfolders found.</string>
+    <string name="external_shader_folder_error">Cannot read the shader folder. Select the folder again.</string>
+    <string name="external_shader_management_summary">Reload the selected file, remove the selection, or view Vulkan diagnostics.</string>
+    <string name="external_shader_import_first">Select a .wmshader file first.</string>
+    <string name="external_shader_reload">Reload original file</string>
+    <string name="external_shader_parameters">External shader parameters</string>
+    <string name="external_shader_parameters_summary">Adjust the parameters of the selected external shader.</string>
+    <string name="external_shader_apply">Apply</string>
+    <string name="external_shader_cancel">Cancel</string>
+    <string name="external_shader_ok">OK</string>
+    <string name="external_shader_loading">Loading shaders…</string>
+    <string name="external_shader_value_range">Enter a value from %1$s to %2$s.</string>
+    <string name="external_shader_decrease">Decrease %1$s</string>
+    <string name="external_shader_increase">Increase %1$s</string>
+    <string name="external_shader_reset">Defaults</string>
+    <string name="external_shader_remove">Remove imported shader</string>
+    <string name="external_shader_remove_confirm">Remove the imported shader? Its original file will be kept.</string>
+    <string name="external_shader_diagnostics">Vulkan diagnostics</string>
+    <string name="external_shader_no_errors">No Vulkan pipeline error reported.</string>
+    <string name="external_shader_compiling">Processing shader…</string>
+    <string name="external_shader_ready">Shader loaded.</string>
+    <string name="external_shader_error">Could not load shader</string>
+    <string name="external_shader_no_parameters">This shader declares no adjustable parameters.</string>
+    <string name="external_shader_parameters_help">Parameters declared by the imported shader. Apply, then return to the game to preview.</string>
+</resources>

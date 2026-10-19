@@ -1,0 +1,19 @@
+// @watermelon-shader 1
+// @name lcd1x_fine
+// @parameter BRIGHTEN_SCANLINES "Scanline brightness" 16.0 1.0 32.0 0.5
+// @parameter BRIGHTEN_LCD "LCD brightness" 4.0 1.0 12.0 0.1
+// @parameter GRID_DENSITY "Grid density" 1.4166667 0.5 4.0 0.01
+// Neutral LCD grid inspired by Gigaherz's public-domain lcd3x.
+// This example is released into the public domain.
+
+vec3 watermelonShader(vec2 uv, vec2 pixel, vec3 color)
+{
+    vec2 grid = pixel * GRID_DENSITY;
+    vec2 angle = 6.283185307 * (grid - 0.25);
+    vec2 visibility = smoothstep(vec2(2.0), vec2(3.0),
+        vec2(1.0) / max(fwidth(grid), vec2(0.0001)));
+    vec2 wave = sin(angle) * visibility;
+    float yfactor = (BRIGHTEN_SCANLINES + wave.y) / (BRIGHTEN_SCANLINES + 1.0);
+    float xfactor = (BRIGHTEN_LCD + wave.x) / (BRIGHTEN_LCD + 1.0);
+    return color * yfactor * xfactor;
+}

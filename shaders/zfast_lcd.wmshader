@@ -1,0 +1,28 @@
+// @watermelon-shader 1
+// @name zfast_lcd
+// @parameter BORDER_MULTIPLIER "Border multiplier" 14.0 -40.0 40.0 1.0
+// @parameter GAMMA_STRENGTH "Gamma effect strength" 1.0 0.0 1.0 0.05
+// @parameter GRID_DENSITY "Grid density" 1.0 0.5 4.0 0.01
+/*
+ * Adapted from zfast_lcd_standard, Copyright (C) 2017 Greg Hogan (SoltanGris42).
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation, either version 2, or (at your option) any later version.
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for the license.
+ */
+vec3 watermelonShader(vec2 uv, vec2 pixel, vec3 color)
+{
+    vec2 size = wmSourceSize * GRID_DENSITY;
+    vec2 position = pixel * GRID_DENSITY;
+    vec2 center = clamp(floor(position), vec2(0.0), size - 1.0) + 0.5;
+    vec2 distance = abs(center - position);
+    float y = max(distance.x, distance.y);
+    y *= y;
+    float yy = y * y;
+    float weight = 1.0 - BORDER_MULTIPLIER * (yy - 2.7 * yy * y);
+    vec3 sampled = wmSample(center / size) * weight;
+    return mix(sampled, sampled * (0.6 + 0.4 * sampled), GAMMA_STRENGTH);
+}

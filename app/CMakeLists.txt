@@ -25,6 +25,23 @@ set(LIBRASHADER_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/build/generated/librashader")
 set(LIBRASHADER_INCLUDE_DIR "${LIBRASHADER_ROOT}/include")
 set(LIBRASHADER_LIBRARY "${LIBRASHADER_ROOT}/jniLibs/${ANDROID_ABI}/liblibrashader.so")
 
+# Independent compiler for WatermelonDS single-pass shaders (not the RA runtime).
+include(FetchContent)
+set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
+set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
+set(ENABLE_HLSL OFF CACHE BOOL "" FORCE)
+set(GLSLANG_TESTS OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(watermelon_glslang
+        GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
+        GIT_TAG 16.6.0
+        GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(watermelon_glslang)
+file(READ "${ANDROID_CPP_DIR}/renderer/VulkanSurfacePresenter.frag" WM_PRESENTER_SOURCE)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${ANDROID_CPP_DIR}/renderer/VulkanSurfacePresenter.frag")
+configure_file("${ANDROID_CPP_DIR}/renderer/ExternalShaderTemplate.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/ExternalShaderTemplate.h" @ONLY)
+
 set(MELONDS_HAS_ADRENOTOOLS OFF)
 if (MELONDS_ENABLE_ADRENOTOOLS AND ANDROID_ABI STREQUAL "arm64-v8a")
     include(FetchContent)
@@ -196,10 +213,15 @@ add_library(
         "${ANDROID_CPP_DIR}/renderer/OpenGlRetroArchFilterChain.cpp"
         "${ANDROID_CPP_DIR}/renderer/VulkanRetroArchFilterChain.cpp"
         "${ANDROID_CPP_DIR}/renderer/VulkanSurfacePresenter.cpp"
+        "${ANDROID_CPP_DIR}/renderer/ExternalShaderCompiler.cpp"
         "${ANDROID_CPP_DIR}/retroachievements/RetroAchievementsManager.cpp"
 )
 
 add_dependencies(melonDS-android-frontend regenerate_vulkan_spirv_headers)
+target_include_directories(melonDS-android-frontend PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+target_link_libraries(melonDS-android-frontend glslang SPIRV glslang-default-resource-limits)
+target_link_options(melonDS-android-frontend PRIVATE
+        "-Wl,--exclude-libs=libglslang.a:libSPIRV.a:libglslang-default-resource-limits.a")
 target_compile_definitions(melonDS-android-frontend PRIVATE VK_NO_PROTOTYPES)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

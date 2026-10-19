@@ -521,6 +521,10 @@ class EmulatorActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            runCatching { me.magnum.melonds.common.opengl.ExternalShaderStore.restore(this@EmulatorActivity) }
+                .onFailure { android.widget.Toast.makeText(this@EmulatorActivity, it.message, android.widget.Toast.LENGTH_LONG).show() }
+        }
         handler = Handler(mainLooper)
         externalDisplayMode = settingsRepository.getExternalDisplayMode()
         lifecycleOwnerProvider.setCurrentLifecycleOwner(this)

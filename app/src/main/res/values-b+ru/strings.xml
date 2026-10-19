@@ -556,6 +556,7 @@
         <item>LCD</item>
         <item>Сканлайны</item>
         <item>RetroArch (.slangp)</item>
+        <item>@string/external_shader_filter</item>
     </string-array>
 
     <string-array name="dsi_camera_source_options">

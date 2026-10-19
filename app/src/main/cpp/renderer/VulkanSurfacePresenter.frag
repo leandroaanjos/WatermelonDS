@@ -45,6 +45,7 @@ layout(push_constant) uniform PresenterPushConstants
     uint bottomStructuredHandoffSuppress3d;
     float viewportWidth;
     float viewportHeight;
+    float externalParameters[6];
 } pushConstants;
 
 const uint kMetaFlagRegularCaptureUses3d = 1u << 21u;
@@ -58,6 +59,7 @@ const uint kFilterHq2x = 3u;
 const uint kFilterHq4x = 4u;
 const uint kFilterQuilez = 5u;
 const uint kFilterLcd = 6u;
+const uint kFilterExternal = 9u;
 const uint kFilterScanlines = 7u;
 
 layout(location = 0) in vec2 fragUv;
@@ -1316,6 +1318,15 @@ vec3 filterLcd(vec2 uv, bool topScreen)
     return clamp(color * yFactor * xFactors, 0.0, 1.0);
 }
 
+// External shaders see each screen separately, with RGB samples and native pixels.
+bool wmTopScreen = true;
+const vec2 wmSourceSize = vec2(256.0, 192.0);
+vec3 wmSample(vec2 uv) { return sampleCompositeRgb(uvFromScreenLocal(uv, wmTopScreen), wmTopScreen); }
+vec2 wmOutputSize() { return vec2(pushConstants.viewportWidth, pushConstants.viewportHeight); }
+// WM_EXTERNAL_BEGIN
+vec3 watermelonShader(vec2 uv, vec2 pixel, vec3 color) { return color; }
+// WM_EXTERNAL_END
+
 vec3 filterXbr2(vec2 uv, bool topScreen)
 {
     vec2 texel = compositeDsTexelSize();
@@ -1445,6 +1456,11 @@ vec3 applyCompositePostFilter(vec2 uv, bool topScreen)
         return filterHq4x(uv, topScreen);
     if (pushConstants.filtering == kFilterLcd)
         return filterLcd(uv, topScreen);
+    if (pushConstants.filtering == kFilterExternal) {
+        wmTopScreen = topScreen;
+        vec2 local = screenLocalCoord(uv, topScreen);
+        return clamp(watermelonShader(local, local * wmSourceSize, sampleCompositeRgb(uv, topScreen)), 0.0, 1.0);
+    }
     if (pushConstants.filtering == kFilterScanlines)
         return filterScanlines(uv, topScreen);
     return sampleCompositeRgb(uv, topScreen);

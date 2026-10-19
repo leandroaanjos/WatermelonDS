@@ -41,6 +41,8 @@
 #include "renderer/OpenGlRetroArchFilter.h"
 #include "renderer/ShaderDiagnostics.h"
 #include "renderer/VulkanFilterMode.h"
+#include "renderer/ExternalShaderParameters.h"
+#include "renderer/ExternalShaderCompiler.h"
 #include "performancehint/ThreadSafePerformanceHintSession.h"
 #include "performancehint/PerformanceHintManagerFactory.h"
 
@@ -159,6 +161,7 @@ MelonDSAndroid::VulkanFilterMode mapVulkanFilterMode(jint ordinal)
         case 6: return MelonDSAndroid::VulkanFilterMode::Lcd;
         case 7: return MelonDSAndroid::VulkanFilterMode::Scanlines;
         case 8: return MelonDSAndroid::VulkanFilterMode::RetroArch;
+        case 9: return MelonDSAndroid::VulkanFilterMode::External;
         case 0:
         default: return MelonDSAndroid::VulkanFilterMode::Nearest;
     }
@@ -3426,4 +3429,41 @@ void* emulate(void*)
 
     MelonDSAndroid::stop();
     pthread_exit(NULL);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_setExternalShaderParametersNative(
+    JNIEnv* env, jobject, jfloatArray values)
+{
+    if (values == nullptr || env->GetArrayLength(values) != 6) return;
+    std::array<float, 6> parameters{};
+    env->GetFloatArrayRegion(values, 0, 6, parameters.data());
+    if (env->ExceptionCheck()) return;
+    MelonDSAndroid::setExternalShaderParameters(parameters);
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_compileExternalShaderNative(JNIEnv* env, jobject, jstring body)
+{
+    if (body == nullptr) return env->NewStringUTF("Missing shader source.");
+    const char* text = env->GetStringUTFChars(body, nullptr);
+    if (text == nullptr) return nullptr;
+    std::string source(text);
+    env->ReleaseStringUTFChars(body, text);
+    try {
+        const std::string error = MelonDSAndroid::compileExternalShader(source);
+        return env->NewStringUTF(error.c_str());
+    } catch (const std::exception& error) {
+        return env->NewStringUTF(error.what());
+    }
+}
+extern "C" JNIEXPORT void JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_clearExternalShaderNative(JNIEnv*, jobject)
+{
+    MelonDSAndroid::clearExternalShader();
+}
+extern "C" JNIEXPORT jstring JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_getExternalShaderErrorNative(JNIEnv* env, jobject)
+{
+    return env->NewStringUTF(MelonDSAndroid::getExternalShaderError().c_str());
 }

@@ -1,4 +1,6 @@
 #include "VulkanSurfacePresenter.h"
+#include "ExternalShaderParameters.h"
+#include "ExternalShaderCompiler.h"
 
 #include <android/trace.h>
 #include <algorithm>
@@ -202,9 +204,10 @@ struct ComposedPresenterPushConstants
     u32 bottomStructuredHandoffSuppress3d;
     float viewportWidth;
     float viewportHeight;
+    std::array<float, 6> externalParameters;
 };
 
-static_assert(sizeof(ComposedPresenterPushConstants) == 92u);
+static_assert(sizeof(ComposedPresenterPushConstants) == 116u);
 
 struct PrewarmedRetroArchChains
 {
@@ -2714,6 +2717,10 @@ bool VulkanSurfacePresenter::directCarryReadyForInputs(const SurfaceState& surfa
 
 bool VulkanSurfacePresenter::ensureSwapchain(SurfaceState& surfaceState)
 {
+    const u64 desiredShaderGeneration = surfaceState.config.filtering == VulkanFilterMode::External
+        ? getExternalShaderGeneration() : 0;
+    if (surfaceState.externalShaderGeneration != desiredShaderGeneration)
+        surfaceState.swapchainDirty = true;
     if (!surfaceState.swapchainDirty && surfaceState.swapchain != VK_NULL_HANDLE)
         return true;
 
@@ -3045,6 +3052,21 @@ bool VulkanSurfacePresenter::ensureSwapchain(SurfaceState& surfaceState)
     shaderStages[1].module = composedFragmentShaderModule;
     shaderStages[1].pName = "main";
 
+    VkShaderModule externalModule = VK_NULL_HANDLE;
+    if (surfaceState.config.filtering == VulkanFilterMode::External) {
+        const auto external = getExternalShaderSnapshot();
+        if (!external.words.empty()) {
+            VkShaderModuleCreateInfo info{};
+            info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            info.codeSize = external.words.size() * sizeof(uint32_t);
+            info.pCode = external.words.data();
+            if (vkCreateShaderModule(device, &info, nullptr, &externalModule) == VK_SUCCESS)
+                shaderStages[1].module = externalModule;
+            else
+                setExternalShaderPipelineError("Vulkan could not create the imported shader module.");
+        }
+    }
+
     VkVertexInputBindingDescription bindingDescription{};
     bindingDescription.binding = 0;
     bindingDescription.stride = sizeof(SurfaceVertex);
@@ -3134,7 +3156,7 @@ bool VulkanSurfacePresenter::ensureSwapchain(SurfaceState& surfaceState)
     const u64 a1PipelineStartNs = PerfNowNs();
 
     ensureSurfacePipelineCache();
-    const VkResult createPipelineResult = vkCreateGraphicsPipelines(
+    VkResult createPipelineResult = vkCreateGraphicsPipelines(
         device,
         surfacePipelineCache,
         1,
@@ -3142,6 +3164,16 @@ bool VulkanSurfacePresenter::ensureSwapchain(SurfaceState& surfaceState)
         nullptr,
         &surfaceState.composedPipeline
     );
+    if (externalModule != VK_NULL_HANDLE) {
+        vkDestroyShaderModule(device, externalModule, nullptr);
+        if (createPipelineResult != VK_SUCCESS) {
+            setExternalShaderPipelineError("Vulkan rejected the imported shader pipeline; using passthrough.");
+            shaderStages[1].module = composedFragmentShaderModule;
+            createPipelineResult = vkCreateGraphicsPipelines(device, surfacePipelineCache, 1,
+                &pipelineInfo, nullptr, &surfaceState.composedPipeline);
+        }
+    }
+    surfaceState.externalShaderGeneration = desiredShaderGeneration;
     if (createPipelineResult != VK_SUCCESS)
         return failSwapchainConfig("vkCreateGraphicsPipelines", createPipelineResult);
     saveSurfacePipelineCache();
@@ -5716,6 +5748,7 @@ bool VulkanSurfacePresenter::recordSurfaceCommands(
             );
         }
         {
+            const auto shaderParameters = getExternalShaderParameters();
             const ComposedPresenterPushConstants composedPushConstants{
                 .drawMode = pushConstants.drawMode,
                 .scale = pushConstants.scale,
@@ -5746,6 +5779,7 @@ bool VulkanSurfacePresenter::recordSurfaceCommands(
                     pushConstants.bottomStructuredHandoffSuppress3d,
                 .viewportWidth = pushConstants.viewportWidth,
                 .viewportHeight = pushConstants.viewportHeight,
+                .externalParameters = shaderParameters,
             };
             vkCmdPushConstants(
                 surfaceState.commandBuffer,

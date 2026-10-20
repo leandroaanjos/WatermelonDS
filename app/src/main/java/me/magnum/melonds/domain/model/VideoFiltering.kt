@@ -20,6 +20,6 @@ enum class VideoFiltering {
     }
 
     fun isSupportedByOpenGlSurface(): Boolean {
-        return this != SCANLINES && this != EXTERNAL
+        return this != SCANLINES
     }
 }

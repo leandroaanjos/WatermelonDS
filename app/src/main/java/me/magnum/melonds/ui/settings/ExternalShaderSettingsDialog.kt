@@ -223,7 +223,10 @@ class ExternalShaderSettingsDialog(private val fragment: Fragment) {
                         .setPositiveButton(R.string.external_shader_ok) { _, _ -> work(showReady = false) { ExternalShaderStore.remove(context.applicationContext) } }
                         .setNegativeButton(R.string.external_shader_cancel, null).show()
                     2 -> AlertDialog.Builder(context).setTitle(R.string.external_shader_diagnostics)
-                        .setMessage(MelonDSAndroidInterface.getExternalShaderErrorNative().ifEmpty { context.getString(R.string.external_shader_no_errors) })
+                        .setMessage(listOf(
+                            me.magnum.melonds.common.opengl.ExternalShaderRuntime.error.takeIf { it.isNotEmpty() }?.let { "OpenGL: $it" },
+                            MelonDSAndroidInterface.getExternalShaderErrorNative().takeIf { it.isNotEmpty() }?.let { "Vulkan: $it" },
+                        ).filterNotNull().joinToString("\n\n").ifEmpty { context.getString(R.string.external_shader_no_errors) })
                         .setPositiveButton(R.string.external_shader_ok, null).show()
                 }
             }.setNegativeButton(R.string.external_shader_cancel, null).show()

@@ -1086,7 +1086,7 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
     ) {
         val filtering = videoFilteringOrNone(filteringValue)
         val retroArchEnabled = filtering == VideoFiltering.RETROARCH
-        val externalShaderEnabled = renderer == VideoRenderer.VULKAN && filtering == VideoFiltering.EXTERNAL
+        val externalShaderEnabled = filtering == VideoFiltering.EXTERNAL
         findPreference<Preference>("video_external_shader_settings")?.isVisible = externalShaderEnabled
         externalShaderSettingsDialog.updateVisibility(externalShaderEnabled)
 

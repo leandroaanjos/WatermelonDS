@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="external_shader_filter">External shader (Vulkan)</string>
+    <string name="external_shader_filter">External shader</string>
     <string name="external_shader_settings">External shader settings</string>
     <string name="external_shader_folder">External shader source</string>
     <string name="external_shader_selection">External shader</string>
@@ -8,7 +8,7 @@
     <string name="external_shader_none_selected">None selected. Pick one from the external shader folder.</string>
     <string name="external_shader_folder_empty">No .wmshader files or subfolders found.</string>
     <string name="external_shader_folder_error">Cannot read the shader folder. Select the folder again.</string>
-    <string name="external_shader_management_summary">Reload the selected file, remove the selection, or view Vulkan diagnostics.</string>
+    <string name="external_shader_management_summary">Reload the selected file, remove the selection, or view shader diagnostics.</string>
     <string name="external_shader_import_first">Select a .wmshader file first.</string>
     <string name="external_shader_reload">Reload original file</string>
     <string name="external_shader_parameters">External shader parameters</string>
@@ -23,8 +23,8 @@
     <string name="external_shader_reset">Defaults</string>
     <string name="external_shader_remove">Remove imported shader</string>
     <string name="external_shader_remove_confirm">Remove the imported shader? Its original file will be kept.</string>
-    <string name="external_shader_diagnostics">Vulkan diagnostics</string>
-    <string name="external_shader_no_errors">No Vulkan pipeline error reported.</string>
+    <string name="external_shader_diagnostics">Shader diagnostics</string>
+    <string name="external_shader_no_errors">No shader error reported.</string>
     <string name="external_shader_compiling">Processing shader…</string>
     <string name="external_shader_ready">Shader loaded.</string>
     <string name="external_shader_error">Could not load shader</string>

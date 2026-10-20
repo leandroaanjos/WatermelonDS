@@ -18,6 +18,7 @@ object ExternalShaderStore {
     private const val VALUES_KEY = "external_shader_values"
     private val mutex = Mutex()
     private var compiledBody: String? = null
+    private var validatedOpenGlBody: String? = null
     private fun installed(context: Context) = AtomicFile(File(context.filesDir, "imported.wmshader"))
     private fun valuesKey(uri: String?): String = if (uri == null) VALUES_KEY else VALUES_KEY + "_" +
         java.security.MessageDigest.getInstance("SHA-256").digest(uri.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
@@ -49,10 +50,16 @@ object ExternalShaderStore {
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(valuesKey(selectedUri(context)), json.toString()).apply()
         MelonDSAndroidInterface.setExternalShaderParametersNative(values.copyOf(6))
+        ExternalShaderRuntime.publish(source, values)
     }
 
-    private fun compile(source: ExternalShaderSource) {
+    private fun compile(context: Context, source: ExternalShaderSource) {
         val body = source.compilerBody()
+        val renderer = PreferenceManager.getDefaultSharedPreferences(context).getString("video_renderer", "software")
+        if (renderer != "vulkan" && validatedOpenGlBody != body) {
+            ExternalOpenGlValidator.validate(source)
+            validatedOpenGlBody = body
+        }
         if (compiledBody == body && MelonDSAndroidInterface.getExternalShaderErrorNative().isEmpty()) return
         val error = MelonDSAndroidInterface.compileExternalShaderNative(body)
         require(error.isEmpty()) { error }
@@ -61,8 +68,10 @@ object ExternalShaderStore {
 
     suspend fun restore(context: Context) = withContext(Dispatchers.IO) { mutex.withLock {
         source(context)?.let { source ->
-            compile(source)
-            MelonDSAndroidInterface.setExternalShaderParametersNative(values(context, source).copyOf(6))
+            compile(context, source)
+            val values = values(context, source)
+            MelonDSAndroidInterface.setExternalShaderParametersNative(values.copyOf(6))
+            ExternalShaderRuntime.publish(source, values)
         }
     } }
 
@@ -82,7 +91,7 @@ object ExternalShaderStore {
         if (previous != null) values(context, previous) // Migrate the previous selection before changing its URI.
         val source = ExternalShaderSource.parse(bytes.toString(Charsets.UTF_8))
         // Compile before replacing the installed file or any saved parameters.
-        compile(source)
+        compile(context, source)
         val file = installed(context)
         try {
             val output = file.startWrite()
@@ -90,7 +99,7 @@ object ExternalShaderStore {
         } catch (error: Throwable) {
             compiledBody = null
             runCatching {
-                if (previous != null) compile(previous) else MelonDSAndroidInterface.clearExternalShaderNative()
+                if (previous != null) compile(context, previous) else MelonDSAndroidInterface.clearExternalShaderNative()
             }.onFailure { MelonDSAndroidInterface.clearExternalShaderNative(); compiledBody = null }
             throw error
         }
@@ -110,5 +119,6 @@ object ExternalShaderStore {
         compiledBody = null
         PreferenceManager.getDefaultSharedPreferences(context).edit().remove(URI_KEY).remove(VALUES_KEY).apply()
         MelonDSAndroidInterface.clearExternalShaderNative()
+        ExternalShaderRuntime.publish(null)
     } }
 }

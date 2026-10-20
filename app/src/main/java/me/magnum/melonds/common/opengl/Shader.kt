@@ -2,34 +2,58 @@ package me.magnum.melonds.common.opengl
 
 import android.opengl.GLES30
 
-private const val INVALID_ATTRIBUTE = -1
-
 class Shader(
-    private val vertexShaderId: Int,
-    private val fragmentShaderId: Int,
-    private val programId: Int,
+    private var vertexShaderId: Int,
+    private var fragmentShaderId: Int,
+    private var programId: Int,
     val textureFiltering: Int,
+    private val isExternal: Boolean = false,
 ) {
-    val attribUv: Int
-    val attribPos: Int
-    val attribAlpha: Int
-    val uniformTex: Int
+    var attribUv = GLES30.glGetAttribLocation(programId, "vUV")
+        private set
+    var attribPos = GLES30.glGetAttribLocation(programId, "vPos")
+        private set
+    var attribAlpha = GLES30.glGetAttribLocation(programId, "vAlpha")
+        private set
+    var uniformTex = GLES30.glGetUniformLocation(programId, "tex")
+        private set
+    private var uniformParameters = GLES30.glGetUniformLocation(programId, "wmParameters[0]")
+    private var uniformOutputSize = GLES30.glGetUniformLocation(programId, "wmViewportSize")
+    private var externalGeneration = Long.MIN_VALUE
+    private var activeGeneration = Long.MIN_VALUE
 
-    init {
+    fun use(outputWidth: Float = 1f, outputHeight: Float = 1f) {
+        val snapshot = ExternalShaderRuntime.snapshot
+        if (isExternal && externalGeneration != snapshot.generation) {
+            // GL programs belong to their rendering context, including the external display.
+            runCatching {
+                ShaderFactory.createShaderProgram(ExternalOpenGlShader.source(snapshot.source), strict = true)
+            }.onSuccess { next ->
+                delete()
+                vertexShaderId = next.vertexShaderId
+                fragmentShaderId = next.fragmentShaderId
+                programId = next.programId
+                attribUv = next.attribUv
+                attribPos = next.attribPos
+                attribAlpha = next.attribAlpha
+                uniformTex = next.uniformTex
+                uniformParameters = next.uniformParameters
+                uniformOutputSize = next.uniformOutputSize
+                activeGeneration = snapshot.generation
+            }.onFailure { error ->
+                ExternalShaderRuntime.reportError(snapshot.generation, error.message ?: "OpenGL shader compilation failed.")
+            }
+            externalGeneration = snapshot.generation
+        }
         GLES30.glUseProgram(programId)
-        attribUv = GLES30.glGetAttribLocation(programId, "vUV")
-        attribPos = GLES30.glGetAttribLocation(programId, "vPos")
-        attribAlpha = GLES30.glGetAttribLocation(programId, "vAlpha")
-        uniformTex = GLES30.glGetUniformLocation(programId, "tex")
-        GLES30.glUseProgram(0)
-    }
-
-    fun use() {
-        GLES30.glUseProgram(programId)
-        GLES30.glEnableVertexAttribArray(attribUv)
-        GLES30.glEnableVertexAttribArray(attribPos)
-        if (attribAlpha != INVALID_ATTRIBUTE) {
-            GLES30.glEnableVertexAttribArray(attribAlpha)
+        if (attribUv >= 0) GLES30.glEnableVertexAttribArray(attribUv)
+        if (attribPos >= 0) GLES30.glEnableVertexAttribArray(attribPos)
+        if (attribAlpha >= 0) GLES30.glEnableVertexAttribArray(attribAlpha)
+        if (isExternal) {
+            if (activeGeneration == snapshot.generation) {
+                GLES30.glUniform1fv(uniformParameters, 6, snapshot.values.toFloatArray(), 0)
+            }
+            GLES30.glUniform2f(uniformOutputSize, outputWidth, outputHeight)
         }
     }
 

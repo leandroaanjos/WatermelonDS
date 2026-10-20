@@ -1,11 +1,12 @@
-# WatermelonDS external shaders (Vulkan)
+# WatermelonDS external shaders
 
 `.wmshader` files contain plain GLSL, without Kotlin, surrounding quotes, or `\n`
-escapes. This is a custom single-pass format compiled on the device by glslang.
-It uses the native Vulkan presenter, independently of the RetroArch shader loader.
+escapes. This is a custom single-pass format compiled on the device. Vulkan uses glslang;
+OpenGL presentation (including Compute) uses the OpenGL ES 3 driver. Both paths
+are independent of the RetroArch shader loader.
 
 1. Copy examples from the [shaders](../shaders) directory into a folder on the device.
-2. Select **External shader (Vulkan)** in **Settings → Video → Filter**.
+2. Select **External shader** in **Settings → Video → Filter**.
 3. Open **External shader source** and select your custom shader folder.
 4. Open **External shader** to browse its subfolders and select a `.wmshader` file.
    The preference displays the selected shader's name, or
@@ -20,7 +21,7 @@ The app keeps a copy of the selected shader for subsequent sessions. Only one
 external shader is active at a time. Selecting one does not modify the built-in
 filters. Compilation errors display a diagnostic and preserve the installed
 shader. If the Vulkan driver rejects its pipeline, the app uses passthrough;
-the error is available under **External shader settings → Vulkan diagnostics**.
+the error is available under **External shader settings → Shader diagnostics**.
 The browser lists folders first, then `.wmshader` files, and supports controller
 navigation. Choosing a different source folder clears the active selection.
 
@@ -68,10 +69,20 @@ already adapted to this interface.
 ## Examples
 
 - [lcd1x_fine](../shaders/lcd1x_fine.wmshader): a fine, neutral LCD grid.
-- [lcd1x_fine_zfast](../shaders/lcd1x_fine_zfast.wmshader): the fine grid with adjustable zfast LCD gamma shaping.
+- [lcd1x_fine_gamma](../shaders/lcd1x_fine_gamma.wmshader): the fine grid with adjustable zfast LCD gamma shaping.
 - [lcd1x_nds](../shaders/lcd1x_nds.wmshader): a native grid and NDS color correction.
 - [zfast_lcd](../shaders/zfast_lcd.wmshader): pixel borders and a gamma adjustment.
 - [LCD3x](../shaders/lcd3x.wmshader): Gigaherz's original RGB subpixel grid, adapted to native DS pixels.
 
-This feature supports Vulkan only. The imported shader and its parameters apply
+This feature supports Vulkan and OpenGL presentation, including Compute.
+The imported shader and its parameters apply
 to both DS screens and to presentation on an external display.
+
+OpenGL imports are validated on a separate EGL context before replacing the saved
+file. Each presentation context owns its program, including the external display.
+Parameter changes update uniforms without recompiling. Shader reloads take effect
+on the next rendered frame. If OpenGL rejects a program in a presentation context,
+the previous program is kept (passthrough if none was installed), and its error is
+available under **Shader diagnostics**. Backend-specific GLSL features may need
+adaptation when switching between Vulkan GLSL and GLSL ES 3. Both backends expose
+the same documented helpers and up to six parameters.

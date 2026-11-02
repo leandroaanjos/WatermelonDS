@@ -68,8 +68,7 @@ already adapted to this interface.
 
 ## Examples
 
-- [lcd1x_fine](../shaders/lcd1x_fine.wmshader): a fine, neutral LCD grid.
-- [lcd1x_fine_gamma](../shaders/lcd1x_fine_gamma.wmshader): the fine grid with adjustable zfast LCD gamma shaping.
+- [lcd1x_fine_gamma](../shaders/lcd1x_fine_gamma.wmshader): the original PSP grid without PSP color correction or extra smoothing, with adjustable grid size and zfast gamma shaping.
 - [lcd1x_nds](../shaders/lcd1x_nds.wmshader): a native grid and NDS color correction.
 - [zfast_lcd](../shaders/zfast_lcd.wmshader): pixel borders and a gamma adjustment.
 - [LCD3x](../shaders/lcd3x.wmshader): Gigaherz's original RGB subpixel grid, adapted to native DS pixels.
@@ -77,6 +76,13 @@ already adapted to this interface.
 This feature supports Vulkan and OpenGL presentation, including Compute.
 The imported shader and its parameters apply
 to both DS screens and to presentation on an external display.
+
+For `lcd1x_fine_gamma`, **Grid size** ranges from 1.0 to 2.0 in steps of 0.1.
+At 1.0, the grid matches the PSP formula applied to each native DS screen;
+larger values enlarge the cells. Defaults are LCD brightness 6.0 and gamma 0.3.
+Set **Gamma effect strength** to 0 for a neutral grid without gamma shaping.
+This replaces the former **Grid density** parameter. Reload the file to get the
+new control; saved brightness and gamma values are preserved unless reset.
 
 OpenGL imports are validated on a separate EGL context before replacing the saved
 file. Each presentation context owns its program, including the external display.

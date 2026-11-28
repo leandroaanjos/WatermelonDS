@@ -34,6 +34,14 @@
             app:iconSpaceReserved="false"
             android:defaultValue="true" />
 
+    <me.magnum.melonds.ui.settings.preferences.PerformanceHintBudgetPreference
+            android:key="performance_hint_budget"
+            android:title="@string/performance_hint_budget"
+            android:entries="@array/performance_hint_budget_options"
+            android:entryValues="@array/performance_hint_budget_values"
+            android:defaultValue="default"
+            app:iconSpaceReserved="false" />
+
     <ListPreference
             android:key="frameskip_mode"
             android:title="@string/frameskip_mode"

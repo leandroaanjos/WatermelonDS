@@ -44,4 +44,5 @@ data class EmulatorConfiguration(
         val rtcOffsetMinutes: Int = 0,
         val wfcSettingsPath: String? = null,
         val micGain: Int = 1,
+        val performanceHintBudgetPercent: Int = 100,
 )

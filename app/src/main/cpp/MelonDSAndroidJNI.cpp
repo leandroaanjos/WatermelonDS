@@ -92,6 +92,7 @@ std::atomic<float> fps{0.0f};
 std::atomic_int targetFps{60};
 std::atomic<float> fastForwardSpeedMultiplier{0.0f};
 std::atomic<float> frameLimitSpeedMultiplier{1.0f};
+std::atomic<int> performanceHintBudgetPercent{100};
 
 std::atomic<int> frameskipMode{2};
 std::atomic<int> frameskipManualValue{1};
@@ -925,15 +926,23 @@ void publishCurrentAudioOutputSpeedHint()
     MelonDSAndroid::setAudioOutputSpeedHint(currentAudioOutputSpeedHint());
 }
 
+int performanceHintTargetPercent()
+{
+    return performanceHintBudgetPercent.load(std::memory_order_acquire);
+}
+
 int64_t currentPerformanceHintTargetNs()
 {
+    const auto cpuBudget = [](int64_t duration) {
+        return duration * performanceHintTargetPercent() / 100;
+    };
     if (isFastForwardEnabled.load(std::memory_order_acquire)) {
         const float multiplier = fastForwardSpeedMultiplier.load(std::memory_order_acquire);
         if (multiplier > 0)
-            return static_cast<int64_t>(FRAME_DURATION_60FPS_NS / multiplier);
-        return FRAME_DURATION_1000FPS_NS;
+            return cpuBudget(static_cast<int64_t>(FRAME_DURATION_60FPS_NS / multiplier));
+        return cpuBudget(FRAME_DURATION_1000FPS_NS);
     }
-    return frameDurationForFrameLimit();
+    return cpuBudget(frameDurationForFrameLimit());
 }
 
 void updatePerformanceHintTarget()
@@ -987,6 +996,8 @@ Java_me_magnum_melonds_MelonEmulator_setupEmulatorInternal(JNIEnv* env, jobject 
     frameLimitSpeedMultiplier.store(
         sanitizeFrameLimitSpeedMultiplier(finalEmulatorConfiguration.frameLimitSpeedMultiplier),
         std::memory_order_release);
+    performanceHintBudgetPercent.store(finalEmulatorConfiguration.performanceHintBudgetPercent,
+                                       std::memory_order_release);
     frameskipMode.store(sanitizeFrameskipMode(finalEmulatorConfiguration.frameskipMode),
                         std::memory_order_release);
     frameskipManualValue.store(sanitizeFrameskipManualValue(finalEmulatorConfiguration.frameskipManualValue),
@@ -3067,6 +3078,8 @@ Java_me_magnum_melonds_MelonEmulator_updateEmulatorConfiguration(JNIEnv* env, jo
     frameLimitSpeedMultiplier.store(
         sanitizeFrameLimitSpeedMultiplier(newConfiguration.frameLimitSpeedMultiplier),
         std::memory_order_release);
+    performanceHintBudgetPercent.store(newConfiguration.performanceHintBudgetPercent,
+                                       std::memory_order_release);
     frameskipMode.store(sanitizeFrameskipMode(newConfiguration.frameskipMode),
                         std::memory_order_release);
     frameskipManualValue.store(sanitizeFrameskipManualValue(newConfiguration.frameskipManualValue),
@@ -3241,7 +3254,7 @@ void* emulate(void*)
     {
         std::lock_guard<std::mutex> lock(performanceHintSessionLock);
         performanceHintSession = new ThreadSafePerformanceHintSession(std::move(manager));
-        performanceHintSession->createSession(gettid(), FRAME_DURATION_60FPS_NS, performanceHintWorkers);
+        performanceHintSession->createSession(gettid(), currentPerformanceHintTargetNs(), performanceHintWorkers);
         performanceHintSession->updateTargetWorkDuration(currentPerformanceHintTargetNs());
         MelonDSAndroid::hookRegistrarHiloHints = registrarHiloEnHints;
         __android_log_print(ANDROID_LOG_INFO, "melonDS",

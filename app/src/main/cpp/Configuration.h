@@ -109,6 +109,7 @@ typedef struct
     std::string wfcSettingsPath;
     float fastForwardSpeedMultiplier;
     float frameLimitSpeedMultiplier;
+    int performanceHintBudgetPercent = 100;
 
     int frameskipMode;
     int frameskipManualValue;

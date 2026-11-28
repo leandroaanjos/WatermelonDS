@@ -56,7 +56,8 @@ android {
         manifestPlaceholders["appName"] = "@string/app_name"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
+            val requestedAbi = providers.gradleProperty("melondsAbi").orNull
+            abiFilters.addAll(requestedAbi?.let { listOf(it) } ?: listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
         }
         externalNativeBuild {
             cmake {
@@ -245,6 +246,7 @@ val librashaderSourceDir = layout.buildDirectory.dir("librashader/src")
 val librashaderOutputDir = layout.buildDirectory.dir("generated/librashader")
 val librashaderSourceRevisionFile = librashaderSourceDir.map { it.file(".melonds-librashader-revision") }
 val librashaderRevisionFile = librashaderOutputDir.map { it.file("REVISION") }
+val requestedLibrashaderAbi = providers.gradleProperty("melondsAbi").orNull
 val librashaderAbiTargets = listOf(
     LibrashaderAbiTarget(
         abi = "arm64-v8a",
@@ -264,7 +266,7 @@ val librashaderAbiTargets = listOf(
         ndkLibTriple = "x86_64-linux-android",
         clangPrefix = "x86_64-linux-android",
     ),
-)
+).filter { requestedLibrashaderAbi == null || it.abi == requestedLibrashaderAbi }
 
 fun librashaderToolSearchDirs(): List<File> {
     val pathDirs = System.getenv("PATH")

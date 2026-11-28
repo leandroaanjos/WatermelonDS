@@ -1,0 +1,2 @@
+#pragma once
+inline constexpr const char* wmPresenterSource = R"WM_TEMPLATE(@WM_PRESENTER_SOURCE@)WM_TEMPLATE";

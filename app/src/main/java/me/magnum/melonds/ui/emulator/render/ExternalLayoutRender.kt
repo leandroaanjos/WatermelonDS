@@ -276,7 +276,7 @@ class ExternalLayoutRender(
             renderBackground()
         }
 
-        shader.use()
+        shader.use(viewWidth.toFloat(), viewHeight.toFloat())
         if (shader.attribAlpha >= 0) {
             GLES30.glDisableVertexAttribArray(shader.attribAlpha)
         }

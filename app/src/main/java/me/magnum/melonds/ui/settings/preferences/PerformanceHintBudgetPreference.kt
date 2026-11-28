@@ -15,6 +15,7 @@ class PerformanceHintBudgetPreference @JvmOverloads constructor(
             "compatibility" -> context.getString(R.string.performance_hint_budget_compatibility_summary)
             else -> context.getString(R.string.performance_hint_budget_automatic_summary)
         }
-        return "${entry ?: context.getString(R.string.performance_hint_budget_automatic)} — $description"
+        return "${entry ?: context.getString(R.string.performance_hint_budget_automatic)} — " +
+            "${context.getString(R.string.performance_hint_budget_summary)} $description"
     }
 }

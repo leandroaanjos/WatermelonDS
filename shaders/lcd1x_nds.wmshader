@@ -1,0 +1,26 @@
+// @watermelon-shader 1
+// @name lcd1x_nds
+// @parameter BRIGHTEN_SCANLINES "Scanline brightness" 16.0 1.0 32.0 0.5
+// @parameter BRIGHTEN_LCD "LCD brightness" 4.0 1.0 12.0 0.1
+// @parameter GRID_DENSITY "Grid density" 1.0 0.5 4.0 0.01
+// @parameter COLOR_STRENGTH "NDS color correction strength" 1.0 0.0 1.0 0.05
+/*
+ * Adapted from lcd1x_nds by jdgleaver, using Gigaherz's lcd3x and
+ * hunterk / Pokefan531's nds_color. SPDX-License-Identifier: GPL-2.0-or-later
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation, either version 2, or (at your option) any later version.
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for the license.
+ */
+vec3 watermelonShader(vec2 uv, vec2 pixel, vec3 color)
+{
+    vec2 angle = 6.283185307 * (pixel * GRID_DENSITY - 0.25);
+    float yfactor = (BRIGHTEN_SCANLINES + sin(angle.y)) / (BRIGHTEN_SCANLINES + 1.0);
+    float xfactor = (BRIGHTEN_LCD + sin(angle.x)) / (BRIGHTEN_LCD + 1.0);
+    vec3 corrected = pow(color, vec3(1.91));
+    corrected = mat3(0.87, 0.10, 0.10, 0.255, 0.645, 0.17, -0.125, 0.255, 0.73) * (corrected * 0.89);
+    corrected = clamp(pow(max(corrected, vec3(0.0)), vec3(1.0 / 1.91)), 0.0, 1.0);
+    return mix(color, corrected, COLOR_STRENGTH) * yfactor * xfactor;
+}

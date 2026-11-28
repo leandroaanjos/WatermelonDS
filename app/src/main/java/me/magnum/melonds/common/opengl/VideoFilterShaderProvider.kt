@@ -13,6 +13,7 @@ object VideoFilterShaderProvider {
         VideoFiltering.LCD to ShaderProgramSource.LcdShader,
         VideoFiltering.SCANLINES to ShaderProgramSource.ScanlinesShader,
         VideoFiltering.RETROARCH to ShaderProgramSource.RetroArchPassthroughShader,
+        VideoFiltering.EXTERNAL to ShaderProgramSource.ExternalShader,
     )
 
     fun getShaderSource(filtering: VideoFiltering): ShaderProgramSource {

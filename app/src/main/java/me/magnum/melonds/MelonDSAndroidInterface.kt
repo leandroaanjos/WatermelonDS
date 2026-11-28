@@ -5,6 +5,10 @@ import me.magnum.melonds.domain.model.VulkanDriverConfiguration
 import me.magnum.melonds.domain.model.VulkanDriverMode
 
 object MelonDSAndroidInterface {
+    external fun compileExternalShaderNative(body: String): String
+    external fun clearExternalShaderNative()
+    external fun getExternalShaderErrorNative(): String
+    external fun setExternalShaderParametersNative(values: FloatArray)
     const val RENDERER_CAP_OPENGL = 1 shl 0
     const val RENDERER_CAP_VULKAN = 1 shl 1
 

@@ -44,6 +44,8 @@
 #include "renderer/OpenGlRetroArchFilter.h"
 #include "renderer/ShaderDiagnostics.h"
 #include "renderer/VulkanFilterMode.h"
+#include "renderer/ExternalShaderParameters.h"
+#include "renderer/ExternalShaderCompiler.h"
 #include "performancehint/ThreadSafePerformanceHintSession.h"
 #include "performancehint/PerformanceHintManagerFactory.h"
 #include "performancehint/PerformanceHintWorker.h"
@@ -166,6 +168,7 @@ MelonDSAndroid::VulkanFilterMode mapVulkanFilterMode(jint ordinal)
         case 6: return MelonDSAndroid::VulkanFilterMode::Lcd;
         case 7: return MelonDSAndroid::VulkanFilterMode::Scanlines;
         case 8: return MelonDSAndroid::VulkanFilterMode::RetroArch;
+        case 9: return MelonDSAndroid::VulkanFilterMode::External;
         case 0:
         default: return MelonDSAndroid::VulkanFilterMode::Nearest;
     }
@@ -922,15 +925,32 @@ void publishCurrentAudioOutputSpeedHint()
     MelonDSAndroid::setAudioOutputSpeedHint(currentAudioOutputSpeedHint());
 }
 
+int performanceHintTargetPercent()
+{
+    static const int percent = [] {
+        char value[PROP_VALUE_MAX]{};
+        if (__system_property_get("debug.melonds.hint_budget_pct", value) <= 0)
+            return 100;
+        char* end = nullptr;
+        const long parsed = std::strtol(value, &end, 10);
+        return end != value && *end == '\0' && parsed >= 50 && parsed <= 100
+            ? static_cast<int>(parsed) : 100;
+    }();
+    return percent;
+}
+
 int64_t currentPerformanceHintTargetNs()
 {
+    const auto cpuBudget = [](int64_t duration) {
+        return duration * performanceHintTargetPercent() / 100;
+    };
     if (isFastForwardEnabled.load(std::memory_order_acquire)) {
         const float multiplier = fastForwardSpeedMultiplier.load(std::memory_order_acquire);
         if (multiplier > 0)
-            return static_cast<int64_t>(FRAME_DURATION_60FPS_NS / multiplier);
-        return FRAME_DURATION_1000FPS_NS;
+            return cpuBudget(static_cast<int64_t>(FRAME_DURATION_60FPS_NS / multiplier));
+        return cpuBudget(FRAME_DURATION_1000FPS_NS);
     }
-    return frameDurationForFrameLimit();
+    return cpuBudget(frameDurationForFrameLimit());
 }
 
 void updatePerformanceHintTarget()
@@ -3238,7 +3258,7 @@ void* emulate(void*)
     {
         std::lock_guard<std::mutex> lock(performanceHintSessionLock);
         performanceHintSession = new ThreadSafePerformanceHintSession(std::move(manager));
-        performanceHintSession->createSession(gettid(), FRAME_DURATION_60FPS_NS, performanceHintWorkers);
+        performanceHintSession->createSession(gettid(), currentPerformanceHintTargetNs(), performanceHintWorkers);
         performanceHintSession->updateTargetWorkDuration(currentPerformanceHintTargetNs());
         MelonDSAndroid::hookRegistrarHiloHints = registrarHiloEnHints;
         __android_log_print(ANDROID_LOG_INFO, "melonDS",
@@ -3505,4 +3525,41 @@ void* emulate(void*)
 
     MelonDSAndroid::stop();
     return nullptr;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_setExternalShaderParametersNative(
+    JNIEnv* env, jobject, jfloatArray values)
+{
+    if (values == nullptr || env->GetArrayLength(values) != 6) return;
+    std::array<float, 6> parameters{};
+    env->GetFloatArrayRegion(values, 0, 6, parameters.data());
+    if (env->ExceptionCheck()) return;
+    MelonDSAndroid::setExternalShaderParameters(parameters);
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_compileExternalShaderNative(JNIEnv* env, jobject, jstring body)
+{
+    if (body == nullptr) return env->NewStringUTF("Missing shader source.");
+    const char* text = env->GetStringUTFChars(body, nullptr);
+    if (text == nullptr) return nullptr;
+    std::string source(text);
+    env->ReleaseStringUTFChars(body, text);
+    try {
+        const std::string error = MelonDSAndroid::compileExternalShader(source);
+        return env->NewStringUTF(error.c_str());
+    } catch (const std::exception& error) {
+        return env->NewStringUTF(error.what());
+    }
+}
+extern "C" JNIEXPORT void JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_clearExternalShaderNative(JNIEnv*, jobject)
+{
+    MelonDSAndroid::clearExternalShader();
+}
+extern "C" JNIEXPORT jstring JNICALL
+Java_me_magnum_melonds_MelonDSAndroidInterface_getExternalShaderErrorNative(JNIEnv* env, jobject)
+{
+    return env->NewStringUTF(MelonDSAndroid::getExternalShaderError().c_str());
 }

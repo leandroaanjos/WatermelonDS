@@ -12,7 +12,8 @@ enum class VideoFiltering {
     QUILEZ,
     LCD,
     SCANLINES,
-    RETROARCH;
+    RETROARCH,
+    EXTERNAL;
 
     fun isSupportedByVulkan(): Boolean {
         return true

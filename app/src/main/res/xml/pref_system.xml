@@ -37,7 +37,7 @@
     <ListPreference
             android:key="performance_hint_budget"
             android:title="@string/performance_hint_budget"
-            android:summary="%s"
+            android:summary="@string/performance_hint_budget_summary"
             android:entries="@array/performance_hint_budget_options"
             android:entryValues="@array/performance_hint_budget_values"
             android:defaultValue="auto"

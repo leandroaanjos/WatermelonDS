@@ -12,4 +12,6 @@ common/bin/
 rcheevos-api/bin/
 *.patch
 !/app/librashader-patches/*.patch
+signing/
+.gradle-user/
 

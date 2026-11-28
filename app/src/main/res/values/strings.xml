@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">WatermelonDS</string>
+    <string name="app_name">Optimized WatermelonDS</string>
 
     <string name="ok">OK</string>
     <string name="yes">Yes</string>
@@ -442,14 +442,13 @@
     <string name="audio_mute_on_fast_forward">Mute on Fast Forward</string>
     <string name="audio_mute_on_fast_forward_summary">No sound while fast forward is active</string>
     <string name="audio_latency">Audio latency</string>
-    <string name="performance_hint_budget">Performance mode</string>
-    <string name="performance_hint_budget_summary">Controls how much CPU time Android reserves for the emulator.</string>
-    <string name="performance_hint_budget_automatic_summary">Uses the standard Android performance target.</string>
+    <string name="performance_hint_budget">ADPF performance target</string>
+    <string name="performance_hint_budget_default_summary">Uses the standard Android performance target.</string>
     <string name="performance_hint_budget_balanced_summary">Provides additional CPU headroom with a moderate target.</string>
-    <string name="performance_hint_budget_compatibility_summary">Provides maximum CPU headroom for difficult devices.</string>
-    <string name="performance_hint_budget_automatic">Automatic</string>
+    <string name="performance_hint_budget_aggressive_summary">Provides maximum CPU headroom for demanding devices.</string>
+    <string name="performance_hint_budget_default">Default (100%)</string>
     <string name="performance_hint_budget_balanced">Balanced (75%)</string>
-    <string name="performance_hint_budget_compatibility">Compatibility (50%)</string>
+    <string name="performance_hint_budget_aggressive">Aggressive (50%)</string>
     <string name="microphone_source">Microphone source</string>
     <string name="device_microphone_gain">Device microphone gain</string>
     <string name="device_microphone_gain_summary">1× keeps the original level. Increase for quiet microphones.</string>

@@ -12,10 +12,9 @@ class PerformanceHintBudgetPreference @JvmOverloads constructor(
     override fun getSummary(): CharSequence {
         val description = when (value) {
             "balanced" -> context.getString(R.string.performance_hint_budget_balanced_summary)
-            "compatibility" -> context.getString(R.string.performance_hint_budget_compatibility_summary)
-            else -> context.getString(R.string.performance_hint_budget_automatic_summary)
+            "aggressive" -> context.getString(R.string.performance_hint_budget_aggressive_summary)
+            else -> context.getString(R.string.performance_hint_budget_default_summary)
         }
-        return "${entry ?: context.getString(R.string.performance_hint_budget_automatic)} — " +
-            "${context.getString(R.string.performance_hint_budget_summary)} $description"
+        return "${entry ?: context.getString(R.string.performance_hint_budget_default)}. $description"
     }
 }

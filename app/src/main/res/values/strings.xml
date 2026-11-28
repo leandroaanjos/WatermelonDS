@@ -443,7 +443,9 @@
     <string name="audio_mute_on_fast_forward_summary">No sound while fast forward is active</string>
     <string name="audio_latency">Audio latency</string>
     <string name="performance_hint_budget">Performance mode</string>
-    <string name="performance_hint_budget_summary">Controls how much CPU time Android reserves for the emulator. Lower values may improve smoothness on some devices.</string>
+    <string name="performance_hint_budget_automatic_summary">Uses the standard Android performance target.</string>
+    <string name="performance_hint_budget_balanced_summary">Provides additional CPU headroom with a moderate target.</string>
+    <string name="performance_hint_budget_compatibility_summary">Provides maximum CPU headroom for difficult devices.</string>
     <string name="performance_hint_budget_automatic">Automatic</string>
     <string name="performance_hint_budget_balanced">Balanced (75%)</string>
     <string name="performance_hint_budget_compatibility">Compatibility (50%)</string>

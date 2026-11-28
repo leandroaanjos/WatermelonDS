@@ -34,10 +34,9 @@
             app:iconSpaceReserved="false"
             android:defaultValue="true" />
 
-    <ListPreference
+    <me.magnum.melonds.ui.settings.preferences.PerformanceHintBudgetPreference
             android:key="performance_hint_budget"
             android:title="@string/performance_hint_budget"
-            android:summary="@string/performance_hint_budget_summary"
             android:entries="@array/performance_hint_budget_options"
             android:entryValues="@array/performance_hint_budget_values"
             android:defaultValue="auto"

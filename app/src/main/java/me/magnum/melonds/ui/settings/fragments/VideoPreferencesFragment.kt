@@ -84,6 +84,8 @@ import android.view.View
 
 @AndroidEntryPoint
 class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTitleProvider {
+    private val externalShaderParametersDialog = me.magnum.melonds.ui.settings.ExternalShaderParametersDialog(this)
+    private val externalShaderSettingsDialog = me.magnum.melonds.ui.settings.ExternalShaderSettingsDialog(this)
 
     private companion object {
         const val GLES_3_2 = 0x30002
@@ -136,6 +138,17 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_video, rootKey)
+        externalShaderSettingsDialog.bind(
+            findPreference("video_external_shader_source"), findPreference("video_external_shader_preset"), findPreference("video_external_shader_parameters")
+        )
+        findPreference<Preference>("video_external_shader_settings")?.setOnPreferenceClickListener {
+            externalShaderSettingsDialog.show()
+            true
+        }
+        findPreference<Preference>("video_external_shader_parameters")?.setOnPreferenceClickListener {
+            externalShaderParametersDialog.show()
+            true
+        }
         pendingDsLitePreset = savedInstanceState?.getString(PENDING_DSLITE_PRESET)
             ?.takeIf { path -> DSLITE_PRESETS.any { it.second == path } }
 
@@ -1019,7 +1032,7 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
             VideoRenderer.VULKAN -> currentFiltering.isSupportedByVulkan()
             else -> currentFiltering.isSupportedByOpenGlSurface()
         }
-        if (!currentFilteringSupported) {
+        if (!currentFilteringSupported || videoFilteringPreference.value !in allFilteringValues) {
             videoFilteringPreference.value = VideoFiltering.NONE.name.lowercase()
         }
 
@@ -1073,6 +1086,9 @@ class VideoPreferencesFragment : BasePreferenceFragment(), PreferenceFragmentTit
     ) {
         val filtering = videoFilteringOrNone(filteringValue)
         val retroArchEnabled = filtering == VideoFiltering.RETROARCH
+        val externalShaderEnabled = filtering == VideoFiltering.EXTERNAL
+        findPreference<Preference>("video_external_shader_settings")?.isVisible = externalShaderEnabled
+        externalShaderSettingsDialog.updateVisibility(externalShaderEnabled)
 
         val source = resolveShaderSource()
         val isFolderSource = source == RetroArchShaderSource.FOLDER

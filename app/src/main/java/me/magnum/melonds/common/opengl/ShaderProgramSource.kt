@@ -1,12 +1,13 @@
 package me.magnum.melonds.common.opengl
 
-class ShaderProgramSource private constructor(val textureFiltering: TextureFiltering, val vertexShaderSource: String, val fragmentShaderSource: String) {
+class ShaderProgramSource internal constructor(val textureFiltering: TextureFiltering, val vertexShaderSource: String, val fragmentShaderSource: String, val isExternal: Boolean = false) {
     enum class TextureFiltering {
         NEAREST,
         LINEAR
     }
 
     companion object {
+        val ExternalShader = ShaderProgramSource(TextureFiltering.NEAREST, "", "", isExternal = true)
         private const val TEXTURE_WIDTH = 256
         private const val TEXTURE_HEIGHT = 192 * 2 + 2
 

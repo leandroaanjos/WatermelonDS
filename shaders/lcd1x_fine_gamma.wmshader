@@ -1,0 +1,34 @@
+// @watermelon-shader 1
+// @name lcd1x_fine_gamma
+// @parameter BRIGHTEN_SCANLINES "Scanline brightness" 16.0 1.0 32.0 0.5
+// @parameter BRIGHTEN_LCD "LCD brightness" 6.0 1.0 12.0 0.1
+// @parameter GRID_SIZE "Top screen grid size" 1.2 1.0 2.0 0.1
+// @parameter BOTTOM_GRID_SIZE "Bottom screen grid size" 1.5 1.0 2.0 0.1
+// @parameter GAMMA_STRENGTH "Gamma effect strength" 0.3 0.0 1.0 0.05
+// Original PSP grid size with adjustable enlargement and zfast gamma.
+// No PSP color correction or extra grid smoothing.
+/*
+ * Adapted from zfast_lcd_standard, Copyright (C) 2017 Greg Hogan (SoltanGris42).
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation, either version 2, or (at your option) any later version.
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See https://www.gnu.org/licenses/old-licenses/gpl-2.0.html for the license.
+ */
+
+const float PI = 3.141592654;
+const float PSP_SCREEN_HEIGHT = 272.0;
+
+vec3 watermelonShader(vec2 uv, vec2 pixel, vec3 color)
+{
+    float gridSize = wmIsTopScreen() ? GRID_SIZE : BOTTOM_GRID_SIZE;
+    vec2 grid = pixel * (PSP_SCREEN_HEIGHT / wmSourceSize.y) / gridSize;
+    vec2 angle = 2.0 * PI * (grid - 0.25);
+    vec2 wave = sin(angle);
+    float yfactor = (BRIGHTEN_SCANLINES + wave.y) / (BRIGHTEN_SCANLINES + 1.0);
+    float xfactor = (BRIGHTEN_LCD + wave.x) / (BRIGHTEN_LCD + 1.0);
+    vec3 shaded = color * yfactor * xfactor;
+    return mix(shaded, shaded * (0.6 + 0.4 * shaded), GAMMA_STRENGTH);
+}

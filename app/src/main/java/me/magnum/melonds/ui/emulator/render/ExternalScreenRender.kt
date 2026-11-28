@@ -254,7 +254,7 @@ class ExternalScreenRender(
 
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
         shader?.let { shader ->
-            shader.use()
+            shader.use(surfaceWidth.toFloat(), surfaceHeight.toFloat())
 
             GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId)

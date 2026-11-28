@@ -173,6 +173,7 @@ MelonDSAndroid::VulkanFilterMode mapVulkanFilterMode(jint ordinal)
         case 6: return MelonDSAndroid::VulkanFilterMode::Lcd;
         case 7: return MelonDSAndroid::VulkanFilterMode::Scanlines;
         case 8: return MelonDSAndroid::VulkanFilterMode::RetroArch;
+        case 9: return MelonDSAndroid::VulkanFilterMode::External;
         case 0:
         default: return MelonDSAndroid::VulkanFilterMode::Nearest;
     }

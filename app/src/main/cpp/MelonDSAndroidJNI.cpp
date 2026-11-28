@@ -922,15 +922,32 @@ void publishCurrentAudioOutputSpeedHint()
     MelonDSAndroid::setAudioOutputSpeedHint(currentAudioOutputSpeedHint());
 }
 
+int performanceHintTargetPercent()
+{
+    static const int percent = [] {
+        char value[PROP_VALUE_MAX]{};
+        if (__system_property_get("debug.melonds.hint_budget_pct", value) <= 0)
+            return 100;
+        char* end = nullptr;
+        const long parsed = std::strtol(value, &end, 10);
+        return end != value && *end == '\0' && parsed >= 50 && parsed <= 100
+            ? static_cast<int>(parsed) : 100;
+    }();
+    return percent;
+}
+
 int64_t currentPerformanceHintTargetNs()
 {
+    const auto cpuBudget = [](int64_t duration) {
+        return duration * performanceHintTargetPercent() / 100;
+    };
     if (isFastForwardEnabled.load(std::memory_order_acquire)) {
         const float multiplier = fastForwardSpeedMultiplier.load(std::memory_order_acquire);
         if (multiplier > 0)
-            return static_cast<int64_t>(FRAME_DURATION_60FPS_NS / multiplier);
-        return FRAME_DURATION_1000FPS_NS;
+            return cpuBudget(static_cast<int64_t>(FRAME_DURATION_60FPS_NS / multiplier));
+        return cpuBudget(FRAME_DURATION_1000FPS_NS);
     }
-    return frameDurationForFrameLimit();
+    return cpuBudget(frameDurationForFrameLimit());
 }
 
 void updatePerformanceHintTarget()
@@ -3238,7 +3255,7 @@ void* emulate(void*)
     {
         std::lock_guard<std::mutex> lock(performanceHintSessionLock);
         performanceHintSession = new ThreadSafePerformanceHintSession(std::move(manager));
-        performanceHintSession->createSession(gettid(), FRAME_DURATION_60FPS_NS, performanceHintWorkers);
+        performanceHintSession->createSession(gettid(), currentPerformanceHintTargetNs(), performanceHintWorkers);
         performanceHintSession->updateTargetWorkDuration(currentPerformanceHintTargetNs());
         MelonDSAndroid::hookRegistrarHiloHints = registrarHiloEnHints;
         __android_log_print(ANDROID_LOG_INFO, "melonDS",

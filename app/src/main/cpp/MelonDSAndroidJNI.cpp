@@ -90,6 +90,7 @@ std::atomic<float> fps{0.0f};
 std::atomic_int targetFps{60};
 std::atomic<float> fastForwardSpeedMultiplier{0.0f};
 std::atomic<float> frameLimitSpeedMultiplier{1.0f};
+std::atomic<int> performanceHintBudgetPercent{100};
 
 std::atomic<int> frameskipMode{2};
 std::atomic<int> frameskipManualValue{1};
@@ -924,16 +925,7 @@ void publishCurrentAudioOutputSpeedHint()
 
 int performanceHintTargetPercent()
 {
-    static const int percent = [] {
-        char value[PROP_VALUE_MAX]{};
-        if (__system_property_get("debug.melonds.hint_budget_pct", value) <= 0)
-            return 100;
-        char* end = nullptr;
-        const long parsed = std::strtol(value, &end, 10);
-        return end != value && *end == '\0' && parsed >= 50 && parsed <= 100
-            ? static_cast<int>(parsed) : 100;
-    }();
-    return percent;
+    return performanceHintBudgetPercent.load(std::memory_order_acquire);
 }
 
 int64_t currentPerformanceHintTargetNs()
@@ -1001,6 +993,8 @@ Java_me_magnum_melonds_MelonEmulator_setupEmulatorInternal(JNIEnv* env, jobject 
     frameLimitSpeedMultiplier.store(
         sanitizeFrameLimitSpeedMultiplier(finalEmulatorConfiguration.frameLimitSpeedMultiplier),
         std::memory_order_release);
+    performanceHintBudgetPercent.store(finalEmulatorConfiguration.performanceHintBudgetPercent,
+                                       std::memory_order_release);
     frameskipMode.store(sanitizeFrameskipMode(finalEmulatorConfiguration.frameskipMode),
                         std::memory_order_release);
     frameskipManualValue.store(sanitizeFrameskipManualValue(finalEmulatorConfiguration.frameskipManualValue),
@@ -3081,6 +3075,8 @@ Java_me_magnum_melonds_MelonEmulator_updateEmulatorConfiguration(JNIEnv* env, jo
     frameLimitSpeedMultiplier.store(
         sanitizeFrameLimitSpeedMultiplier(newConfiguration.frameLimitSpeedMultiplier),
         std::memory_order_release);
+    performanceHintBudgetPercent.store(newConfiguration.performanceHintBudgetPercent,
+                                       std::memory_order_release);
     frameskipMode.store(sanitizeFrameskipMode(newConfiguration.frameskipMode),
                         std::memory_order_release);
     frameskipManualValue.store(sanitizeFrameskipManualValue(newConfiguration.frameskipManualValue),

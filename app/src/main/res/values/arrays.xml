@@ -117,6 +117,18 @@
         <item>high</item>
     </string-array>
 
+    <string-array name="performance_hint_budget_options">
+        <item>@string/performance_hint_budget_automatic</item>
+        <item>@string/performance_hint_budget_balanced</item>
+        <item>@string/performance_hint_budget_compatibility</item>
+    </string-array>
+
+    <string-array name="performance_hint_budget_values">
+        <item>auto</item>
+        <item>balanced</item>
+        <item>compatibility</item>
+    </string-array>
+
     <string-array name="mic_source_values">
         <item>none</item>
         <item>blow</item>

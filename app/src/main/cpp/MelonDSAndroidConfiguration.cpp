@@ -273,6 +273,7 @@ MelonDSAndroid::EmulatorConfiguration MelonDSAndroidConfiguration::buildEmulator
     jstring internalFilesDir = (jstring) env->GetObjectField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "internalDirectory", "Ljava/lang/String;"));
     jfloat fastForwardMaxSpeed = env->GetFloatField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "fastForwardSpeedMultiplier", "F"));
     jfloat frameLimitSpeed = env->GetFloatField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "frameLimitSpeedMultiplier", "F"));
+    jint performanceHintBudgetPercent = env->GetIntField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "performanceHintBudgetPercent", "I"));
     jint frameskipMode = env->GetIntField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "frameskipMode", "I"));
     jint frameskipManualValue = env->GetIntField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "frameskipManualValue", "I"));
     jboolean vulkanDrsEnabled = env->GetBooleanField(emulatorConfiguration, env->GetFieldID(emulatorConfigurationClass, "vulkanDrsEnabled", "Z"));
@@ -325,6 +326,8 @@ MelonDSAndroid::EmulatorConfiguration MelonDSAndroidConfiguration::buildEmulator
     finalEmulatorConfiguration.wfcSettingsPath = std::move(wfcSettingsPath);
     finalEmulatorConfiguration.fastForwardSpeedMultiplier = fastForwardMaxSpeed;
     finalEmulatorConfiguration.frameLimitSpeedMultiplier = frameLimitSpeed;
+    finalEmulatorConfiguration.performanceHintBudgetPercent = performanceHintBudgetPercent >= 50 && performanceHintBudgetPercent <= 100
+        ? performanceHintBudgetPercent : 100;
     finalEmulatorConfiguration.frameskipMode = frameskipMode;
     finalEmulatorConfiguration.frameskipManualValue = frameskipManualValue;
     finalEmulatorConfiguration.vulkanDrsEnabled = vulkanDrsEnabled;

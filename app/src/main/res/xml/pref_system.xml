@@ -35,6 +35,15 @@
             android:defaultValue="true" />
 
     <ListPreference
+            android:key="performance_hint_budget"
+            android:title="@string/performance_hint_budget"
+            android:summary="%s"
+            android:entries="@array/performance_hint_budget_options"
+            android:entryValues="@array/performance_hint_budget_values"
+            android:defaultValue="auto"
+            app:iconSpaceReserved="false" />
+
+    <ListPreference
             android:key="frameskip_mode"
             android:title="@string/frameskip_mode"
             android:summary="@string/frameskip_mode_summary"
